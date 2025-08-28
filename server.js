@@ -62,14 +62,16 @@ const scrapeGoldPrice = async () => {
 const fetchMarketSummary = async () => {
     console.log("Fetching market summary from AI...");
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        // --- PERBAIKAN DI SINI ---
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
         const prompt = "Anda adalah seorang analis pasar keuangan di Indonesia. Berdasarkan berita-berita utama hari ini tentang ekonomi global dan Indonesia, berikan ringkasan singkat (maksimal 3 kalimat) mengenai sentimen pasar terhadap harga emas. Sertakan juga properti 'sentiment' (Positif/Negatif/Netral) dan 'recommendation' ('Beli'/'Jual'/'Tahan'). Jawab dalam format JSON.";
         
         const result = await model.generateContent(prompt);
         const response = await result.response;
-        const text = response.text();
+        // Menghapus backtick dan 'json' dari respons teks mentah
+        const cleanedText = response.text().replace(/```json/g, '').replace(/```/g, '');
         
-        const jsonData = JSON.parse(text);
+        const jsonData = JSON.parse(cleanedText);
         cachedMarketSummary = { status: "success", last_update: new Date().toISOString(), data: jsonData };
         console.log("Market summary fetched successfully:", jsonData);
 
@@ -81,29 +83,25 @@ const fetchMarketSummary = async () => {
 
 
 // --- JADWAL OTOMATIS (CRON JOBS) ---
-// Jadwalkan scraping harga emas setiap jam 3 pagi
 cron.schedule('0 3 * * *', scrapeGoldPrice, { timezone: "Asia/Jakarta" });
-// Jadwalkan pengambilan ringkasan pasar setiap jam 7 pagi
 cron.schedule('0 7 * * *', fetchMarketSummary, { timezone: "Asia/Jakarta" });
 
 
 // --- ENDPOINTS API ---
 
-// Endpoint 1: Mendapatkan harga emas terkini
 app.get("/", (req, res) => {
     res.json(cachedGoldData);
 });
 
-// Endpoint 2: Mendapatkan ringkasan berita pasar
 app.get("/api/ai/market-summary", (req, res) => {
     res.json(cachedMarketSummary);
 });
 
-// Endpoint 3: Wawasan Portofolio Cerdas
 app.post("/api/ai/portfolio-insight", async (req, res) => {
     try {
         const { totalEmas, avgBeli, totalProfit } = req.body;
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        // --- PERBAIKAN DI SINI ---
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
         const prompt = `Anda adalah seorang penasihat keuangan yang suportif. Seorang investor emas memiliki portofolio sebagai berikut: Total Emas: ${totalEmas} gram, Rata-rata Harga Beli: Rp ${Math.round(avgBeli)}/gram, Total Keuntungan/Kerugian Saat Ini: Rp ${Math.round(totalProfit)}. Berikan analisis singkat dan saran yang personal dan memotivasi dalam satu paragraf. Gunakan bahasa yang mudah dimengerti.`;
         
         const result = await model.generateContent(prompt);
@@ -114,11 +112,11 @@ app.post("/api/ai/portfolio-insight", async (req, res) => {
     }
 });
 
-// Endpoint 4: Perencana Tujuan Finansial
 app.post("/api/ai/goal-planner", async (req, res) => {
     try {
         const { goalName, goalTarget, goalYears, currentValue } = req.body;
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        // --- PERBAIKAN DI SINI ---
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
         const prompt = `Anda adalah seorang perencana keuangan. Klien saya punya tujuan: '${goalName}' sebesar Rp ${goalTarget} dalam ${goalYears} tahun. Aset emasnya untuk tujuan ini sekarang bernilai Rp ${currentValue}. Dengan asumsi kenaikan harga emas 7% per tahun, berikan rencana menabung emas bulanan yang konkret (dalam gram dan Rupiah) untuk mencapai tujuan tersebut. Berikan jawaban yang jelas dan memotivasi.`;
         
         const result = await model.generateContent(prompt);
@@ -133,7 +131,6 @@ app.post("/api/ai/goal-planner", async (req, res) => {
 // --- MULAI SERVER ---
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
-    // Lakukan pengambilan data pertama kali saat server dinyalakan
     scrapeGoldPrice();
     fetchMarketSummary();
 });
