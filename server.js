@@ -62,8 +62,8 @@ const scrapeGoldPrice = async () => {
 const fetchMarketSummary = async () => {
     console.log("Fetching market summary from AI...");
     try {
-        // --- PERBAIKAN DI SINI ---
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+        // --- PERUBAHAN SESUAI PERMINTAAN ANDA ---
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
         const prompt = "Anda adalah seorang analis pasar keuangan di Indonesia. Berdasarkan berita-berita utama hari ini tentang ekonomi global dan Indonesia, berikan ringkasan singkat (maksimal 3 kalimat) mengenai sentimen pasar terhadap harga emas. Sertakan juga properti 'sentiment' (Positif/Negatif/Netral) dan 'recommendation' ('Beli'/'Jual'/'Tahan'). Jawab dalam format JSON.";
         
         const result = await model.generateContent(prompt);
@@ -100,8 +100,8 @@ app.get("/api/ai/market-summary", (req, res) => {
 app.post("/api/ai/portfolio-insight", async (req, res) => {
     try {
         const { totalEmas, avgBeli, totalProfit } = req.body;
-        // --- PERBAIKAN DI SINI ---
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+        // --- PERUBAHAN SESUAI PERMINTAAN ANDA ---
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
         const prompt = `Anda adalah seorang penasihat keuangan yang suportif. Seorang investor emas memiliki portofolio sebagai berikut: Total Emas: ${totalEmas} gram, Rata-rata Harga Beli: Rp ${Math.round(avgBeli)}/gram, Total Keuntungan/Kerugian Saat Ini: Rp ${Math.round(totalProfit)}. Berikan analisis singkat dan saran yang personal dan memotivasi dalam satu paragraf. Gunakan bahasa yang mudah dimengerti.`;
         
         const result = await model.generateContent(prompt);
@@ -115,8 +115,8 @@ app.post("/api/ai/portfolio-insight", async (req, res) => {
 app.post("/api/ai/goal-planner", async (req, res) => {
     try {
         const { goalName, goalTarget, goalYears, currentValue } = req.body;
-        // --- PERBAIKAN DI SINI ---
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+        // --- PERUBAHAN SESUAI PERMINTAAN ANDA ---
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
         const prompt = `Anda adalah seorang perencana keuangan. Klien saya punya tujuan: '${goalName}' sebesar Rp ${goalTarget} dalam ${goalYears} tahun. Aset emasnya untuk tujuan ini sekarang bernilai Rp ${currentValue}. Dengan asumsi kenaikan harga emas 7% per tahun, berikan rencana menabung emas bulanan yang konkret (dalam gram dan Rupiah) untuk mencapai tujuan tersebut. Berikan jawaban yang jelas dan memotivasi.`;
         
         const result = await model.generateContent(prompt);
