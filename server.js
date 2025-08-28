@@ -1,9 +1,13 @@
 import express from "express";
 import fetch from "node-fetch";
 import * as cheerio from "cheerio";
+import cors from "cors"; // Tambahkan ini untuk mengizinkan akses dari domain lain
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Middleware untuk mengaktifkan CORS
+app.use(cors());
 
 app.get("/", async (req, res) => {
   try {
@@ -18,17 +22,36 @@ app.get("/", async (req, res) => {
     const $ = cheerio.load(html);
 
     let data = {};
+    let found = false; // Variabel untuk menghentikan loop
 
     $("table.lm-table tbody tr").each((i, el) => {
-      const cols = $(el).find("td");
-      const gramasi = $(cols[0]).text().trim();
-      const hargaJual = $(cols[1]).text().trim();
-      const hargaBeli = $(cols[2]).text().trim();
+      if (found) return; // Hentikan iterasi jika data sudah ditemukan
 
-      if (gramasi.includes("1 gr")) {
-        data = { gramasi, hargaJual, hargaBeli };
+      const cols = $(el).find("td");
+      
+      if (cols.length >= 3) {
+        const gramasi = $(cols[0]).text().trim();
+        
+        // --- PERBAIKAN DI SINI ---
+        // Membersihkan harga dari karakter selain angka
+        const hargaJual = $(cols[1]).text().replace(/[^0-9]/g, '');
+        const hargaBeli = $(cols[2]).text().replace(/[^0-9]/g, '');
+
+        if (gramasi.toLowerCase() === "1gram") {
+          data = { gramasi, hargaJual, hargaBeli };
+          found = true; // Set 'found' menjadi true agar loop berhenti
+        }
       }
     });
+
+    if (!found) {
+        return res.status(404).json({
+            status: "error",
+            source: url,
+            message: "Data harga untuk 1 gram tidak ditemukan. Mungkin struktur website berubah.",
+            data: {}
+        });
+    }
 
     res.json({
       status: "success",
